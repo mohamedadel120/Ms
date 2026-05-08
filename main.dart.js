@@ -61733,7 +61733,7 @@ q=A.j4(i,B.bX,i,2,i,i,60)
 p=A.dM("Please join us in celebrating our wedding day.\nIt means the world to us to share this special moment with our closest friends and family.",i,A.a6T().$3$color$fontSize$height(B.aP,a0?24:20,1.6),B.aq)
 m=a0?B.aJ:B.ay
 l=a0?350:1/0
-l=A.d([A.Em(A.ei(A.d([B.zI,B.eW,A.dM("WHEN",i,A.pz().$4$color$fontSize$fontWeight$letterSpacing(B.aP,20,B.aB,2),i),B.eV,A.dM("Saturday, August 22, 2026\nAt 8:00 PM in the afternoon",i,A.a6T().$2$color$fontSize(B.aP,20),B.aq)],n),i,B.Z),i,l)],n)
+l=A.d([A.Em(A.ei(A.d([B.zI,B.eW,A.dM("WHEN",i,A.pz().$4$color$fontSize$fontWeight$letterSpacing(B.aP,20,B.aB,2),i),B.eV,A.dM("Saturday, August 22, 2026\nAt 7:00 PM in the afternoon",i,A.a6T().$2$color$fontSize(B.aP,20),B.aq)],n),i,B.Z),i,l)],n)
 if(a0)l.push(B.HH)
 else l.push(B.va)
 k=a0?350:1/0
