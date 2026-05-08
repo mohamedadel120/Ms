@@ -359,7 +359,7 @@ class InvitationPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 15),
                               Text(
-                                'Saturday, August 22, 2026\nAt 8:00 PM in the afternoon',
+                                'Saturday, August 22, 2026\nAt 7:00 PM in the afternoon',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.cormorantGaramond(
                                   fontSize: 20,
