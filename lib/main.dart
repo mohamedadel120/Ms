@@ -3,6 +3,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'dart:ui';
+import 'dart:math';
+
+String getResponsiveImagePath(String path, BuildContext context) {
+  if (path.endsWith('.png')) return path; // Skip textures
+  bool isDesktop = MediaQuery.of(context).size.width > 800;
+  if (isDesktop) return path;
+
+  final ext = path.split('.').last;
+  final basePath = path.substring(0, path.length - ext.length - 1);
+  return '${basePath}_mobile.$ext';
+}
 
 void main() {
   runApp(const WeddingApp());
@@ -35,11 +46,16 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  int _counter = 5;
-  int _phase = 0; // 0 for countdown, 1 for text
-  Timer? _timer;
+    with TickerProviderStateMixin {
+  int _phase =
+      0; // 0: floating, 1: flap opening, 2: letter sliding, 3: dropping, 4: navigating
   late AnimationController _zoomController;
+  late AnimationController _floatController;
+  late AnimationController _flapController;
+  late AnimationController _letterController;
+  late AnimationController _dropController;
+
+  double _frozenFloatValue = 0;
 
   @override
   void initState() {
@@ -49,66 +65,133 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 10),
     )..forward();
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_phase == 0) {
-        if (_counter > 1) {
-          setState(() {
-            _counter--;
-          });
-        } else {
-          setState(() {
-            _phase = 1;
-          });
-          _timer?.cancel();
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              Navigator.of(context).pushReplacement(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const InvitationPage(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                  transitionDuration: const Duration(milliseconds: 1500),
-                ),
-              );
-            }
-          });
-        }
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _flapController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _letterController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _dropController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _flapController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _phase = 2;
+        });
+        _letterController.forward();
+      }
+    });
+
+    _letterController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _phase = 3;
+        });
+        // Small delay so user can read the letter before it scales and transitions
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (mounted) {
+            _dropController.forward();
+          }
+        });
+      }
+    });
+
+    _dropController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _phase = 4;
+        });
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const InvitationPage(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                transitionDuration: const Duration(milliseconds: 1200),
+              ),
+            );
+          }
+        });
       }
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _zoomController.dispose();
+    _floatController.dispose();
+    _flapController.dispose();
+    _letterController.dispose();
+    _dropController.dispose();
     super.dispose();
+  }
+
+  void _openEnvelope() {
+    if (_phase == 0) {
+      _frozenFloatValue = _floatController.value;
+      _floatController.stop();
+      setState(() {
+        _phase = 1;
+      });
+      _flapController.forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Calculate blur based on counter. Starts highly blurred, sharpens to 0.
-    double targetBlur = _phase == 0 ? (_counter - 1) * 10.0 : 0.0;
+    bool isDesktop = MediaQuery.of(context).size.width > 800;
+    double targetBlur = _phase == 0 ? 40.0 : 0.0;
+
+    final floatCurve = CurvedAnimation(
+      parent: _floatController,
+      curve: Curves.easeInOutSine,
+    );
+    final flapCurve = CurvedAnimation(
+      parent: _flapController,
+      curve: Curves.easeInOutBack,
+    ); // bouncy flap!
+    final letterCurve = CurvedAnimation(
+      parent: _letterController,
+      curve: Curves.easeOutBack,
+    );
+    final dropCurve = CurvedAnimation(
+      parent: _dropController,
+      curve: Curves.easeInBack,
+    ); // pulls back then drops!
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Ken Burns Cinematic Zoom & Blur Reveal
+          // Ken Burns Background
           AnimatedBuilder(
             animation: _zoomController,
             builder: (context, child) {
               return Transform.scale(
-                scale: 1.0 + (_zoomController.value * 0.15), // Slow zoom in
+                scale: 1.0 + (_zoomController.value * 0.15),
                 child: child,
               );
             },
             child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 50.0, end: targetBlur),
-              duration: const Duration(milliseconds: 800),
+              tween: Tween<double>(begin: 40.0, end: targetBlur),
+              duration: Duration(milliseconds: _phase == 0 ? 0 : 3000),
               curve: Curves.easeOut,
               builder: (context, blurValue, child) {
                 return ImageFiltered(
@@ -117,79 +200,286 @@ class _SplashScreenState extends State<SplashScreen>
                     sigmaY: blurValue,
                   ),
                   child: Image.asset(
-                    'assets/images/0J1A9208.jpg.jpeg',
+                    getResponsiveImagePath(
+                      'assets/images/0J1A9208.jpg.jpeg',
+                      context,
+                    ),
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                   ),
                 );
               },
             ),
           ),
-          Container(color: Colors.black.withOpacity(0.4)),
+          Container(
+            color: Colors.black.withOpacity(0.5),
+          ), // Darker overlay for contrast
+
           Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 800),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.8, end: 1.0).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutBack,
-                      ),
-                    ),
-                    child: child,
-                  ),
-                );
-              },
-              child: _phase == 0
-                  ? Text(
-                      '$_counter',
-                      key: ValueKey<int>(_counter),
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 120,
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w300,
-                      ),
-                    )
-                  : Column(
-                      key: const ValueKey('text'),
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Save the Date',
-                          style: GoogleFonts.greatVibes(
-                            fontSize: 80,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
+            child: _phase < 4
+                ? GestureDetector(
+                    key: const ValueKey('envelope'),
+                    onTap: _openEnvelope,
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _floatController,
+                        _flapController,
+                        _letterController,
+                        _dropController,
+                      ]),
+                      builder: (context, child) {
+                        double floatOffset = _phase == 0
+                            ? floatCurve.value * -20
+                            : _frozenFloatValue * -20;
+                        double envelopeDrop = _phase >= 3
+                            ? dropCurve.value * 1000
+                            : 0;
+                        double totalEnvelopeY = floatOffset + envelopeDrop;
+                        double letterY = floatOffset;
+
+                        return SizedBox(
+                          width: 320,
+                          height: 220,
+                          child: Stack(
+                            alignment: Alignment.bottomCenter,
+                            clipBehavior: Clip.none,
+                            children: [
+                              // 1. Envelope Back
+                              Positioned.fill(
+                                child: Transform.translate(
+                                  offset: Offset(0, totalEnvelopeY),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFC4A47C),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.6),
+                                          blurRadius: 40,
+                                          offset: const Offset(0, 20),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 2. Opened Top Flap (Rotates 90 to 180)
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                child: Transform.translate(
+                                  offset: Offset(0, totalEnvelopeY),
+                                  child: Transform(
+                                    alignment: Alignment.topCenter,
+                                    transform: Matrix4.identity()
+                                      ..setEntry(3, 2, 0.001)
+                                      ..rotateX(flapCurve.value * -pi),
+                                    child: flapCurve.value > 0.5
+                                        ? ClipPath(
+                                            clipper: TopFlapClipper(),
+                                            child: Container(
+                                              height: 140,
+                                              color: const Color(0xFFB59368),
+                                            ),
+                                          )
+                                        : const SizedBox(),
+                                  ),
+                                ),
+                              ),
+
+                              // 3. Sliding Letter
+                              Positioned(
+                                bottom:
+                                    10 +
+                                    (letterCurve.value *
+                                        280), // Slide up higher!
+                                left: 15,
+                                right: 15,
+                                child: Transform.translate(
+                                  offset: Offset(0, letterY),
+                                  child: Transform.scale(
+                                    scale:
+                                        1.0 +
+                                        (dropCurve.value *
+                                            0.4), // Scale up letter
+                                    child: Opacity(
+                                      opacity: (1.0 - (dropCurve.value * 0.5))
+                                          .clamp(0.0, 1.0), // Fade slightly
+                                      child: Container(
+                                        height: 190,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFDFBF7),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                0.15,
+                                              ),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 5),
+                                            ),
+                                          ],
+                                          image: const DecorationImage(
+                                            image: AssetImage(
+                                              'assets/images/texture.png',
+                                            ),
+                                            fit: BoxFit.cover,
+                                            opacity: 0.1,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Save the Date',
+                                                style: GoogleFonts.greatVibes(
+                                                  fontSize: 38,
+                                                  color: const Color(
+                                                    0xFF5C4033,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 15),
+                                              Text(
+                                                '22 . 08 . 2026',
+                                                style:
+                                                    GoogleFonts.playfairDisplay(
+                                                      fontSize: 16,
+                                                      letterSpacing: 4,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: const Color(
+                                                        0xFF5C4033,
+                                                      ),
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 4. Front Flaps
+                              Positioned.fill(
+                                child: Transform.translate(
+                                  offset: Offset(0, totalEnvelopeY),
+                                  child: ClipPath(
+                                    clipper: FrontFlapsClipper(),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFCBAA80),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: CustomPaint(
+                                        painter: EnvelopeLinesPainter(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // 5. Closed Top Flap (Rotates 0 to 90) + Wax Seal
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                child: Transform.translate(
+                                  offset: Offset(0, totalEnvelopeY),
+                                  child: Transform(
+                                    alignment: Alignment.topCenter,
+                                    transform: Matrix4.identity()
+                                      ..setEntry(3, 2, 0.001)
+                                      ..rotateX(flapCurve.value * -pi),
+                                    child: flapCurve.value <= 0.5
+                                        ? Stack(
+                                            clipBehavior: Clip.none,
+                                            alignment: Alignment.topCenter,
+                                            children: [
+                                              ClipPath(
+                                                clipper: TopFlapClipper(),
+                                                child: Container(
+                                                  height: 140,
+                                                  decoration: const BoxDecoration(
+                                                    color: Color(0xFFDAB78A),
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                8,
+                                                              ),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Wax Seal
+                                              Positioned(
+                                                top: 105, // Tip of flap
+                                                child: Container(
+                                                  width: 55,
+                                                  height: 55,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: const Color(
+                                                      0xFF8C1C13,
+                                                    ), // Deep red wax
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.4),
+                                                        blurRadius: 8,
+                                                        offset: const Offset(
+                                                          0,
+                                                          4,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    border: Border.all(
+                                                      color: const Color(
+                                                        0xFF7A150F,
+                                                      ),
+                                                      width: 2,
+                                                    ),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'M&S',
+                                                      style:
+                                                          GoogleFonts.greatVibes(
+                                                            color: const Color(
+                                                              0xFFE5D3B3,
+                                                            ),
+                                                            fontSize: 22,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox(),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          '22 . 08 . 2026',
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 28,
-                            color: Colors.white,
-                            letterSpacing: 10,
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-            ),
+                  )
+                : const SizedBox(),
           ),
         ],
       ),
@@ -197,24 +487,93 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
+// --- Custom Clippers & Painters for the Envelope ---
+
+class FrontFlapsClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width / 2, size.height / 2 + 15); // Dip in the center
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class TopFlapClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width / 2, size.height); // Pointing down
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class EnvelopeLinesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Colors.black.withOpacity(0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    // Line from bottom corners to center to simulate folded flaps
+    Path path = Path();
+    path.moveTo(0, size.height);
+    path.lineTo(size.width / 2, size.height / 2 + 15);
+    path.lineTo(size.width, size.height);
+    canvas.drawPath(path, paint);
+
+    // Top V edge
+    Path vEdge = Path();
+    vEdge.moveTo(0, 0);
+    vEdge.lineTo(size.width / 2, size.height / 2 + 15);
+    vEdge.lineTo(size.width, 0);
+    canvas.drawPath(vEdge, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter old) => false;
+}
+
 class InvitationPage extends StatelessWidget {
   const InvitationPage({super.key});
 
   Widget _buildPhoto(String path, double height) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+    return Builder(
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            image: DecorationImage(
+              image: AssetImage(getResponsiveImagePath(path, context)),
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+            ),
           ),
-        ],
-        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
-      ),
+        );
+      },
     );
   }
 
@@ -230,6 +589,7 @@ class InvitationPage extends StatelessWidget {
             image: AssetImage('assets/images/texture.png'),
             fit: BoxFit.cover,
             opacity: 0.3, // Subtle vintage paper texture
+            filterQuality: FilterQuality.high,
           ),
         ),
         child: SingleChildScrollView(
@@ -243,8 +603,12 @@ class InvitationPage extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Image.asset(
-                      'assets/images/0J1A9346.jpg.jpeg',
+                      getResponsiveImagePath(
+                        'assets/images/0J1A9346.jpg.jpeg',
+                        context,
+                      ),
                       fit: BoxFit.cover,
+                      filterQuality: FilterQuality.high,
                     ),
                     Container(
                       color: Colors.black.withOpacity(
