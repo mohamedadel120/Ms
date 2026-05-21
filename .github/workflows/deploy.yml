@@ -17,21 +17,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
 
       - name: Install dependencies
-        run: flutter pub get
+        run: dart pub get
 
       - name: Build Web App
-        # Adjust base-href if you are using a custom domain.
-        # If using standard username.github.io/repo_name, this will extract the repo name automatically.
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        run: |
+          dart pub global activate jaspr_cli
+          jaspr build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./build/jaspr

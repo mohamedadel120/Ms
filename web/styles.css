@@ -486,11 +486,8 @@ body {
 .info-block {
     width: 350px;
 }
-.info-block a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+a.info-block {
+    display: block;
     text-decoration: none;
     color: #5C4033;
 }

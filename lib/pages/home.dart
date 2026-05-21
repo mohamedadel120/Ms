@@ -57,19 +57,18 @@ class Home extends StatelessComponent {
               text('At 7:00 PM in the afternoon'),
             ]),
           ]),
-          div(classes: 'info-block', [
-            a(
-              href: 'https://maps.app.goo.gl/DhTzaHYop9k886Zr5',
-              target: Target.blank,
-              [
-                i(classes: 'material-icons icon', [
-                  text('location_on_outlined'),
-                ]),
-                h3([text('WHERE')]),
-                p(classes: 'underline', [text('Garden plaza el maadi island')]),
-              ],
-            ),
-          ]),
+          a(
+            href: 'https://maps.app.goo.gl/DhTzaHYop9k886Zr5',
+            target: Target.blank,
+            classes: 'info-block',
+            [
+              i(classes: 'material-icons icon', [
+                text('location_on_outlined'),
+              ]),
+              h3([text('WHERE')]),
+              p(classes: 'underline', [text('Garden plaza el maadi island')]),
+            ],
+          ),
         ]),
       ]),
 
