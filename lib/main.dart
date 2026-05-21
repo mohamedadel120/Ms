@@ -153,6 +153,26 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  Widget _buildHeart(double progress, double xOffset, double speed, double scaleOffset) {
+    if (progress <= 0) return const SizedBox();
+    double y = 140 - (progress * 250 * speed); // Moves up from inside envelope
+    double opacity = progress < 0.8 ? progress * 2 : (1.0 - progress) * 5; 
+    opacity = opacity.clamp(0.0, 1.0);
+    double scale = scaleOffset + (progress * 0.5);
+    
+    return Positioned(
+      bottom: y,
+      left: 160 + xOffset - 12, // center minus half icon size
+      child: Transform.scale(
+        scale: scale,
+        child: Opacity(
+          opacity: opacity,
+          child: const Icon(Icons.favorite, color: Color(0xFF8C1C13), size: 24),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width > 800;
@@ -205,6 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
                       context,
                     ),
                     fit: BoxFit.cover,
+                    cacheWidth: isDesktop ? 1200 : null,
                     filterQuality: FilterQuality.high,
                   ),
                 );
@@ -228,20 +249,29 @@ class _SplashScreenState extends State<SplashScreen>
                         _dropController,
                       ]),
                       builder: (context, child) {
-                        double floatOffset = _phase == 0
-                            ? floatCurve.value * -20
-                            : _frozenFloatValue * -20;
+                        // No floating or tilting when closed - sits normally
+                        double floatOffset = 0.0;
                         double envelopeDrop = _phase >= 3
                             ? dropCurve.value * 1000
                             : 0;
                         double totalEnvelopeY = floatOffset + envelopeDrop;
                         double letterY = floatOffset;
 
+                        // No 3D tilt when closed
+                        double tiltY = 0.0;
+                        double tiltX = 0.0;
+
                         return SizedBox(
                           width: 320,
                           height: 220,
-                          child: Stack(
-                            alignment: Alignment.bottomCenter,
+                          child: Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.001)
+                              ..rotateY(tiltY)
+                              ..rotateX(tiltX),
+                            child: Stack(
+                              alignment: Alignment.bottomCenter,
                             clipBehavior: Clip.none,
                             children: [
                               // 1. Envelope Back
@@ -368,6 +398,13 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ),
 
+                              // 3.5 Floating Hearts Burst
+                              if (_phase >= 2 && _phase < 4) ...[
+                                _buildHeart(letterCurve.value, -60, 0.9, 0.8),
+                                _buildHeart(letterCurve.value, 50, 1.2, 1.0),
+                                _buildHeart(letterCurve.value, 0, 1.5, 0.6),
+                              ],
+
                               // 4. Front Flaps
                               Positioned.fill(
                                 child: Transform.translate(
@@ -473,7 +510,36 @@ class _SplashScreenState extends State<SplashScreen>
                                   ),
                                 ),
                               ),
+
+                              // 6. Tap to Open Indicator
+                              if (_phase == 0)
+                                Positioned(
+                                  bottom: -50,
+                                  left: 0,
+                                  right: 0,
+                                  child: Opacity(
+                                    opacity: 0.4 + (floatCurve.value * 0.6), // Pulses with the float
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.touch_app, color: Colors.white, size: 24),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Tap to open',
+                                            style: GoogleFonts.greatVibes(
+                                              color: Colors.white,
+                                              fontSize: 32,
+                                              letterSpacing: 1.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
+                          ),
                           ),
                         );
                       },
@@ -567,7 +633,10 @@ class InvitationPage extends StatelessWidget {
               ),
             ],
             image: DecorationImage(
-              image: AssetImage(getResponsiveImagePath(path, context)),
+              image: ResizeImage(
+                AssetImage(getResponsiveImagePath(path, context)),
+                width: 800, // Forces high-quality downsampling at decode time
+              ),
               fit: BoxFit.cover,
               filterQuality: FilterQuality.high,
             ),
@@ -608,6 +677,7 @@ class InvitationPage extends StatelessWidget {
                         context,
                       ),
                       fit: BoxFit.cover,
+                      cacheWidth: isDesktop ? 1200 : null,
                       filterQuality: FilterQuality.high,
                     ),
                     Container(

@@ -34,10 +34,10 @@ void main() {
 
       // --- Mobile / Low Res Version ---
       img.Image mobileResized = decodedImage;
-      if (decodedImage.width > 800) {
-        mobileResized = img.copyResize(decodedImage, width: 800);
+      if (decodedImage.width > 1000) {
+        mobileResized = img.copyResize(decodedImage, width: 1000);
       }
-      final mobileBytes = img.encodeJpg(mobileResized, quality: 75);
+      final mobileBytes = img.encodeJpg(mobileResized, quality: 90);
 
       final ext = file.path.split('.').last;
       final basePath = file.path.substring(
