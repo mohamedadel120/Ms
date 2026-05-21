@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:image/image.dart' as img;
 
 void main() {
-  final dir = Directory('assets/images');
+  final dir = Directory('web/assets/images');
   if (!dir.existsSync()) {
     print('Directory not found');
     return;
