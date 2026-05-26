@@ -49,10 +49,7 @@ class _AppState extends State<App> {
         classes: 'splash-screen phase-$_phase',
         events: {'click': (e) => _openEnvelope()},
         [
-          // Background Ken Burns image
           div(classes: 'bg-blur', []),
-
-          // Dark Overlay
           div(classes: 'overlay', []),
 
           // Tap to open text
@@ -114,9 +111,8 @@ class _AppState extends State<App> {
             // Hearts burst (visible during phase 2)
             if (_phase >= 2)
               div(classes: 'hearts-burst', [
-                i(classes: 'material-icons heart h1', [text('favorite')]),
-                i(classes: 'material-icons heart h2', [text('favorite')]),
-                i(classes: 'material-icons heart h3', [text('favorite')]),
+                for (var n = 1; n <= 3; n++)
+                  i(classes: 'material-icons heart h$n', [text('favorite')]),
               ]),
 
             // Envelope Front Flaps (Bottom/Sides)
@@ -131,7 +127,7 @@ class _AppState extends State<App> {
         ],
       );
     } else {
-      return const Home();
+      return div(classes: 'home-mount', [const Home()]);
     }
   }
 }
