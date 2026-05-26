@@ -46,7 +46,9 @@ class Home extends StatelessComponent {
 
         div(classes: 'info-grid', [
           div(classes: 'info-block', [
-            i(classes: 'material-icons icon', [text('calendar_today')]),
+            div(classes: 'info-icon-wrap', [
+              i(classes: 'material-icons', [text('calendar_today')]),
+            ]),
             h3([text('WHEN')]),
             p([
               text('Saturday, August 22, 2026'),
@@ -57,13 +59,15 @@ class Home extends StatelessComponent {
           a(
             href: 'https://maps.app.goo.gl/DhTzaHYop9k886Zr5',
             target: Target.blank,
-            classes: 'info-block',
+            classes: 'info-block info-block-link',
             [
-              i(classes: 'material-icons icon', [
-                text('location_on_outlined'),
+              div(classes: 'info-icon-wrap', [
+                i(classes: 'material-icons', [text('location_on')]),
               ]),
               h3([text('WHERE')]),
-              p(classes: 'underline', [text('Garden plaza el maadi island')]),
+              p(classes: 'venue-link', [
+                text('Garden plaza el maadi island'),
+              ]),
             ],
           ),
         ]),
