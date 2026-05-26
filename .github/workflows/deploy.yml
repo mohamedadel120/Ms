@@ -25,7 +25,7 @@ jobs:
 
       - name: Build Web App
         run: |
-          dart pub global activate jaspr_cli
+          dart pub global activate jaspr_cli 0.23.1
           jaspr build
 
       - name: Deploy to GitHub Pages

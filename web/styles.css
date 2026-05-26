@@ -479,6 +479,7 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    z-index: 2;
 }
 .hero-bg {
     position: absolute;
@@ -541,6 +542,7 @@ body {
     color: rgba(255, 255, 255, 0.95);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
 }
+
 .date-box {
     font-family: 'Playfair Display', serif;
     font-size: clamp(15px, 2.5vw, 22px);
