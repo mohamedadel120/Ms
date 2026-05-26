@@ -19,6 +19,11 @@ assets/images/hero.png
 assets/images/hero_mobile.png
 assets/images/texture.png
 assets/images/texture_mobile.png
+assets/intro-poster.jpg
+assets/intro-poster4.jpg
+assets/intro-poster١.jpg
+assets/preloader-480p.mp4.bak
+assets/preloader.mp4
 favicon.jpg
 favicon.png
 icons/Icon-192.png
@@ -37,6 +42,9 @@ packages/analyzer/src/summary/format.fbs
 packages/analyzer/src/wolf/README.md
 packages/build_runner/src/commands/serve/live_reload_client.js
 packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js
+packages/dwds/data/README.md
+packages/dwds/shared/README.md
+packages/dwds/src/injected/client.js
 packages/lints/core.yaml
 packages/lints/recommended.yaml
 packages/universal_web/fix_data.yaml
