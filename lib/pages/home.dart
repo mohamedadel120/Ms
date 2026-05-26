@@ -1,14 +1,57 @@
+import 'dart:async';
+
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr/dom.dart';
 
-class Home extends StatelessComponent {
+class Home extends StatefulComponent {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  static final _weddingDay = DateTime(2026, 8, 22, 19);
+
+  Timer? _timer;
+  int _days = 0;
+  int _hours = 0;
+  int _minutes = 0;
+  int _seconds = 0;
+  bool _passed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  void _tick() {
+    final diff = _weddingDay.difference(DateTime.now());
+    if (!mounted) return;
+    if (diff.isNegative) {
+      setState(() => _passed = true);
+      return;
+    }
+    setState(() {
+      _passed = false;
+      _days = diff.inDays;
+      _hours = diff.inHours % 24;
+      _minutes = diff.inMinutes % 60;
+      _seconds = diff.inSeconds % 60;
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Component build(BuildContext context) {
     return div(classes: 'home-page', [
-      div(classes: 'texture-overlay', []),
-
       section(classes: 'hero', [
         img(
           classes: 'hero-bg',
@@ -19,31 +62,51 @@ class Home extends StatelessComponent {
             'sizes': '100vw',
           },
         ),
-        div(classes: 'hero-overlay', []),
+        div(classes: 'hero-gradient', []),
         div(classes: 'hero-content', [
-          h1([text('Save the Date')]),
-          h2([
-            text('MOHAMED ADEL'),
-            br(),
-            text('&'),
-            br(),
-            text('SAMAR TAREK'),
+          p(classes: 'hero-eyebrow', [text('Save the Date')]),
+          h1(classes: 'hero-script', [text('Mohamed')]),
+          p(classes: 'hero-amp', [text('&')]),
+          h1(classes: 'hero-script', [text('Samar')]),
+          p(classes: 'hero-tagline', [
+            text('We invite you to celebrate the beginning of our forever.'),
           ]),
-          div(classes: 'date-box', [text('22 . 08 . 2026')]),
+          div(classes: 'date-box', [text('22 · 08 · 2026')]),
+        ]),
+        a(href: '#countdown', classes: 'scroll-cue', [
+          span(classes: 'scroll-cue-label', [text('Scroll')]),
+          i(classes: 'material-icons', [text('keyboard_arrow_down')]),
+        ]),
+      ]),
+
+      section(
+        id: 'countdown',
+        classes: 'countdown-section',
+        [
+          ..._sectionHead('Counting down', 'Until our wedding day'),
+          if (_passed)
+            p(classes: 'countdown-done', [text('The celebration has begun!')])
+          else
+            div(classes: 'countdown-grid', [
+              _unit('Days', _days),
+              _unit('Hours', _hours),
+              _unit('Minutes', _minutes),
+              _unit('Seconds', _seconds),
+            ]),
+        ],
+      ),
+
+      section(classes: 'invite-section', [
+        ..._sectionHead('With love', 'We are getting married'),
+        p(classes: 'invite-text', [
+          text(
+            'Please join us in celebrating our wedding day. It means the world to us to share this special moment with our closest friends and family.',
+          ),
         ]),
       ]),
 
       section(classes: 'details', [
-        h2(classes: 'title', [text('We are getting married')]),
-        div(classes: 'divider', []),
-        p(classes: 'subtitle', [
-          text('Please join us in celebrating our wedding day.'),
-          br(),
-          text(
-            'It means the world to us to share this special moment with our closest friends and family.',
-          ),
-        ]),
-
+        ..._sectionHead('The celebration', 'When & where'),
         div(classes: 'info-grid', [
           div(classes: 'info-block', [
             div(classes: 'info-icon-wrap', [
@@ -73,10 +136,18 @@ class Home extends StatelessComponent {
         ]),
       ]),
 
-      section(classes: 'gallery-section', [
-        h2(classes: 'title', [text('Our Story')]),
-        div(classes: 'divider', []),
+      section(classes: 'program-section', [
+        ..._sectionHead('The evening', 'Wedding program'),
+        div(classes: 'program-timeline', [
+          _programItem('7:00 PM', 'Welcome', 'Arrival and welcome drinks'),
+          _programItem('7:30 PM', 'Ceremony', 'We say our vows surrounded by you'),
+          _programItem('9:00 PM', 'Dinner', 'Celebration dinner together'),
+          _programItem('11:00 PM', 'Dancing', 'Music and dancing under the stars'),
+        ]),
+      ]),
 
+      section(classes: 'gallery-section', [
+        ..._sectionHead('Our moments', 'A glimpse of us'),
         div(classes: 'gallery-grid', [
           div(classes: 'col col-1', [
             img(
@@ -139,7 +210,6 @@ class Home extends StatelessComponent {
             ),
           ]),
         ]),
-
         p(classes: 'closing-text', [
           text("We can't wait to celebrate with you!"),
         ]),
@@ -147,7 +217,31 @@ class Home extends StatelessComponent {
 
       footer([
         h3([text('Mohamed Adel & Samar Tarek')]),
-        p([text('22 . 08 . 2026')]),
+        p([text('22 · 08 · 2026')]),
+      ]),
+    ]);
+  }
+
+  List<Component> _sectionHead(String eyebrow, String title) => [
+    p(classes: 'section-eyebrow', [text(eyebrow)]),
+    h2(classes: 'title', [text(title)]),
+    div(classes: 'divider', []),
+  ];
+
+  Component _unit(String label, int value) {
+    final padded = value.toString().padLeft(2, '0');
+    return div(classes: 'countdown-unit', [
+      span(classes: 'countdown-value', [text(padded)]),
+      span(classes: 'countdown-unit-label', [text(label)]),
+    ]);
+  }
+
+  Component _programItem(String time, String title, String desc) {
+    return div(classes: 'program-item', [
+      div(classes: 'program-time', [text(time)]),
+      div(classes: 'program-body', [
+        h3([text(title)]),
+        p([text(desc)]),
       ]),
     ]);
   }
