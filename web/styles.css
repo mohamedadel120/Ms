@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #000;
+    background-color: #EBE6DC;
     font-family: 'Cormorant Garamond', serif;
 }
 
@@ -62,6 +62,99 @@ body {
     inset: 0;
     background: rgba(0,0,0,0.5);
     transition: opacity 1.2s ease;
+}
+
+/* Intro: poster → video (wedding cream / gold palette) */
+.intro-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: #EBE6DC;
+    overflow: hidden;
+}
+
+.intro-poster-btn {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+    background: #FDFBF7;
+    display: block;
+}
+
+.intro-poster-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(92, 64, 51, 0.28) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.intro-poster-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+    image-rendering: auto;
+}
+
+.intro-cta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: max(2.2rem, calc(env(safe-area-inset-bottom) + 1.2rem));
+    z-index: 3;
+    text-align: center;
+    pointer-events: none;
+    animation: introCtaPulse 2.4s ease-in-out infinite;
+}
+
+.intro-cta-script {
+    font-family: 'Great Vibes', cursive;
+    font-size: clamp(2rem, 7vw, 3rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: #FDFBF7;
+    text-shadow:
+        0 2px 12px rgba(92, 64, 51, 0.65),
+        0 0 40px rgba(196, 164, 124, 0.35);
+}
+
+@keyframes introCtaPulse {
+    0%, 100% { opacity: 0.7; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(5px); }
+}
+
+.intro-video-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: #EBE6DC;
+    overflow: hidden;
+}
+
+.intro-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Envelope Container */
@@ -182,14 +275,6 @@ body {
     opacity: 1;
 }
 
-/* Phase 0 & 1: Hidden inside envelope */
-.splash-screen.phase-0 .card,
-.splash-screen.phase-1 .card {
-    bottom: -20px; 
-    opacity: 0;
-    pointer-events: none;
-}
-
 /* Phase 2 & 3: Cards fly out and flip face down */
 .splash-screen.phase-2 .card,
 .splash-screen.phase-3 .card,
@@ -280,7 +365,7 @@ body {
     background-color: #CBAA80;
     border-radius: 8px;
     clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
-    border: 1px solid rgba(0,0,0,0.08); /* simulating the strokes */
+    border: 1px solid rgba(0,0,0,0.08);
 }
 
 /* Top Flap */
@@ -299,14 +384,12 @@ body {
     z-index: 10;
 }
 
-/* Open Top Flap */
-.splash-screen.phase-1 .envelope-top,
 .splash-screen.phase-2 .envelope-top,
 .splash-screen.phase-3 .envelope-top,
 .splash-screen.phase-4 .envelope-top {
     transform: rotateX(180deg);
-    background-color: #B59368; /* darker when open */
-    z-index: 1; /* goes behind letter */
+    background-color: #B59368;
+    z-index: 1;
 }
 
 /* Wax Seal */
@@ -330,32 +413,12 @@ body {
     transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 11;
 }
-/* Open Wax Seal (rotates with top flap) */
-.splash-screen.phase-1 .wax-seal,
+
 .splash-screen.phase-2 .wax-seal,
 .splash-screen.phase-3 .wax-seal,
 .splash-screen.phase-4 .wax-seal {
     transform: rotateX(180deg);
-    z-index: 1; /* goes behind letter */
-}
-
-/* Tap to open */
-.tap-to-open {
-    position: absolute;
-    bottom: 20%;
-    display: flex;
-    align-items: center;
-    color: white;
-    font-family: 'Great Vibes', cursive;
-    font-size: 32px;
-    letter-spacing: 1.5px;
-    animation: pulse 2s infinite ease-in-out;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.4; }
-    50% { opacity: 1.0; }
-    100% { opacity: 0.4; }
+    z-index: 1;
 }
 
 /* Hearts */
@@ -397,15 +460,6 @@ body {
     to { opacity: 1; }
 }
 
-/* Main App */
-.main-app {
-    color: black;
-    background: #FDFBF7;
-    height: 100vh;
-    padding: 50px;
-    text-align: center;
-}
-
 /* --- Home Page Styles --- */
 .home-page {
     position: relative;
@@ -415,24 +469,11 @@ body {
     overflow-x: hidden;
 }
 
-.page-body {
-    position: relative;
-}
-
-.texture-overlay {
-    position: absolute;
-    inset: 0;
-    background-image: url('assets/images/texture.png');
-    background-size: cover;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* Hero — full-brightness photo, no dim overlay */
+/* Hero — full photo, light bottom gradient for text */
 .hero {
     position: relative;
-    height: 85vh;
+    height: 100vh;
+    min-height: 520px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -446,88 +487,126 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 1;
+}
+.hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.15) 0%,
+        rgba(0, 0, 0, 0.05) 45%,
+        rgba(0, 0, 0, 0.45) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
 }
 .hero-content {
     position: relative;
     z-index: 2;
     text-align: center;
     color: #ffffff;
-    max-width: 900px;
+    max-width: 880px;
     padding: 0 24px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
-
-/* Script + serif pair: romantic headline, bold readable names */
+.hero-eyebrow {
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    margin: 0 0 16px;
+    color: #E5D3B3;
+}
 .hero-script {
     font-family: 'Great Vibes', cursive;
-    font-size: clamp(56px, 11vw, 96px);
+    font-size: clamp(52px, 10vw, 88px);
     font-weight: 400;
-    line-height: 1.1;
-    margin: 0 0 8px;
-    color: #ffffff;
-    text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.85),
-        0 6px 24px rgba(0, 0, 0, 0.55);
+    line-height: 1.05;
+    margin: 0;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
 }
-
-.hero-names {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(22px, 4.5vw, 40px);
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    line-height: 1.45;
-    margin: 12px 0 0;
-    text-transform: uppercase;
-    color: #ffffff;
-    text-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.9),
-        0 4px 16px rgba(0, 0, 0, 0.65);
-}
-
 .hero-amp {
-    display: inline-block;
     font-family: 'Great Vibes', cursive;
-    font-weight: 400;
-    font-size: 1.35em;
-    letter-spacing: 0;
-    text-transform: none;
+    font-size: clamp(36px, 6vw, 56px);
     margin: 4px 0;
     line-height: 1;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.hero-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(18px, 2.8vw, 22px);
+    line-height: 1.55;
+    max-width: 520px;
+    margin: 20px auto 0;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
 }
 
 .date-box {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(16px, 2.5vw, 24px);
+    font-size: clamp(15px, 2.5vw, 22px);
     font-weight: 700;
     letter-spacing: 0.22em;
-    border: 2px solid rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.92);
     padding: 14px 36px;
     display: inline-block;
-    margin-top: 36px;
-    background: rgba(0, 0, 0, 0.35);
+    margin-top: 32px;
+    background: rgba(0, 0, 0, 0.28);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.scroll-cue {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     color: #ffffff;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    text-decoration: none;
+    opacity: 0.85;
+    transition: opacity 0.25s ease;
+}
+.scroll-cue:hover {
+    opacity: 1;
+}
+.scroll-cue-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+.scroll-cue .material-icons {
+    font-size: 28px;
+    animation: scrollBounce 2s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
 }
 
-/* Countdown — same cream canvas as the rest of the page */
+/* Section pattern (reference sites: eyebrow + script title) */
+.section-eyebrow {
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #8C7355;
+    margin: 0 0 12px;
+}
+
+/* Countdown */
 .countdown-section {
     position: relative;
     z-index: 2;
-    padding: 48px 20px;
+    padding: 72px 20px 64px;
     text-align: center;
     background-color: transparent;
     color: #5C4033;
-}
-.countdown-label {
-    font-family: 'Playfair Display', serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin: 0 0 28px;
-    color: #8C7355;
 }
 .countdown-grid {
     display: flex;
@@ -536,7 +615,7 @@ body {
     gap: clamp(12px, 3vw, 28px);
     flex-wrap: wrap;
     max-width: 520px;
-    margin: 0 auto;
+    margin: 8px auto 0;
 }
 .countdown-unit {
     flex: 1 1 72px;
@@ -568,15 +647,35 @@ body {
 .countdown-done {
     font-family: 'Great Vibes', cursive;
     font-size: 36px;
-    margin: 0;
+    margin: 8px 0 0;
     color: #5C4033;
+}
+
+/* Invitation */
+.invite-section {
+    position: relative;
+    z-index: 2;
+    padding: 64px 20px 48px;
+    text-align: center;
+    color: #5C4033;
+    background-image: url('assets/images/texture.png');
+    background-size: cover;
+    background-blend-mode: multiply;
+    background-color: #FDFBF7;
+}
+.invite-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 3vw, 24px);
+    line-height: 1.7;
+    max-width: 640px;
+    margin: 0 auto;
 }
 
 /* Details */
 .details {
     position: relative;
     z-index: 2;
-    padding: 80px 20px;
+    padding: 72px 20px 80px;
     text-align: center;
     color: #5C4033;
 }
@@ -592,11 +691,63 @@ body {
     background-color: #8C7355;
     margin: 30px auto;
 }
-.subtitle {
+/* Wedding program timeline */
+.program-section {
+    position: relative;
+    z-index: 2;
+    padding: 72px 20px 88px;
+    text-align: center;
+    color: #5C4033;
+    background-color: #FAF5E9;
+}
+.program-timeline {
+    max-width: 520px;
+    margin: 16px auto 0;
+    text-align: left;
+    border-left: 2px solid rgba(140, 115, 85, 0.35);
+    padding-left: 28px;
+}
+.program-item {
+    position: relative;
+    padding: 0 0 32px;
+}
+.program-item:last-child {
+    padding-bottom: 0;
+}
+.program-item::before {
+    content: '';
+    position: absolute;
+    left: -35px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #8C7355;
+    border: 2px solid #FAF5E9;
+    box-shadow: 0 0 0 2px rgba(140, 115, 85, 0.35);
+}
+.program-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #8C7355;
+    margin-bottom: 6px;
+}
+.program-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+.program-body p {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
-    line-height: 1.6;
-    margin-bottom: 80px;
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0;
+    color: #5C4033;
+    opacity: 0.9;
 }
 .info-grid {
     display: flex;
@@ -732,16 +883,17 @@ footer p {
 
 /* Mobile Responsive */
 @media (max-width: 800px) {
-    .hero-script { font-size: 52px; }
-    .hero-names { font-size: 18px; letter-spacing: 0.1em; }
-    .date-box { font-size: 16px; padding: 12px 24px; letter-spacing: 0.16em; }
-    .countdown-section { padding: 36px 16px; }
-    .countdown-unit { min-width: 64px; padding: 12px 6px; }
-    .countdown-value { font-size: 28px; }
+    .hero { min-height: 100svh; }
+    .date-box { padding: 10px 22px; }
     .title { font-size: 42px; }
-    .subtitle { font-size: 20px; }
+    .invite-text { font-size: 20px; }
     .info-grid { flex-direction: column; gap: 40px; align-items: center; }
     .info-block { width: 100%; }
+    .program-timeline { padding-left: 22px; }
+    .program-item::before { left: -30px; }
+    .countdown-section { padding: 48px 16px; }
+    .countdown-unit { min-width: 64px; padding: 12px 6px; }
+    .countdown-value { font-size: 28px; }
     .gallery-grid { flex-direction: column; gap: 20px; }
     .col-2, .col-3 { margin-top: 0; }
     .h-medium, .h-large, .h-xlarge { height: auto; }
