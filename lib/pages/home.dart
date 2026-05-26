@@ -7,10 +7,8 @@ class Home extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return div(classes: 'home-page', [
-      // Texture Overlay
       div(classes: 'texture-overlay', []),
 
-      // Hero Section
       section(classes: 'hero', [
         img(
           classes: 'hero-bg',
@@ -35,7 +33,6 @@ class Home extends StatelessComponent {
         ]),
       ]),
 
-      // Details Section
       section(classes: 'details', [
         h2(classes: 'title', [text('We are getting married')]),
         div(classes: 'divider', []),
@@ -49,7 +46,9 @@ class Home extends StatelessComponent {
 
         div(classes: 'info-grid', [
           div(classes: 'info-block', [
-            i(classes: 'material-icons icon', [text('calendar_today')]),
+            div(classes: 'info-icon-wrap', [
+              i(classes: 'material-icons', [text('calendar_today')]),
+            ]),
             h3([text('WHEN')]),
             p([
               text('Saturday, August 22, 2026'),
@@ -60,19 +59,20 @@ class Home extends StatelessComponent {
           a(
             href: 'https://maps.app.goo.gl/DhTzaHYop9k886Zr5',
             target: Target.blank,
-            classes: 'info-block',
+            classes: 'info-block info-block-link',
             [
-              i(classes: 'material-icons icon', [
-                text('location_on_outlined'),
+              div(classes: 'info-icon-wrap', [
+                i(classes: 'material-icons', [text('location_on')]),
               ]),
               h3([text('WHERE')]),
-              p(classes: 'underline', [text('Garden plaza el maadi island')]),
+              p(classes: 'venue-link', [
+                text('Garden plaza el maadi island'),
+              ]),
             ],
           ),
         ]),
       ]),
 
-      // Gallery Section
       section(classes: 'gallery-section', [
         h2(classes: 'title', [text('Our Story')]),
         div(classes: 'divider', []),
@@ -145,7 +145,6 @@ class Home extends StatelessComponent {
         ]),
       ]),
 
-      // Footer
       footer([
         h3([text('Mohamed Adel & Samar Tarek')]),
         p([text('22 . 08 . 2026')]),
