@@ -7,10 +7,6 @@ class Home extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return div(classes: 'home-page', [
-      // Texture Overlay
-      div(classes: 'texture-overlay', []),
-
-      // Hero Section
       section(classes: 'hero', [
         img(
           classes: 'hero-bg',
@@ -21,7 +17,6 @@ class Home extends StatelessComponent {
             'sizes': '100vw',
           },
         ),
-        div(classes: 'hero-overlay', []),
         div(classes: 'hero-content', [
           h1([text('Save the Date')]),
           h2([
@@ -35,8 +30,10 @@ class Home extends StatelessComponent {
         ]),
       ]),
 
-      // Details Section
-      section(classes: 'details', [
+      div(classes: 'page-body', [
+        div(classes: 'texture-overlay', []),
+
+        section(classes: 'details', [
         h2(classes: 'title', [text('We are getting married')]),
         div(classes: 'divider', []),
         p(classes: 'subtitle', [
@@ -70,10 +67,9 @@ class Home extends StatelessComponent {
             ],
           ),
         ]),
-      ]),
+        ]),
 
-      // Gallery Section
-      section(classes: 'gallery-section', [
+        section(classes: 'gallery-section', [
         h2(classes: 'title', [text('Our Story')]),
         div(classes: 'divider', []),
 
@@ -145,10 +141,10 @@ class Home extends StatelessComponent {
         ]),
       ]),
 
-      // Footer
-      footer([
-        h3([text('Mohamed Adel & Samar Tarek')]),
-        p([text('22 . 08 . 2026')]),
+        footer([
+          h3([text('Mohamed Adel & Samar Tarek')]),
+          p([text('22 . 08 . 2026')]),
+        ]),
       ]),
     ]);
   }
